@@ -1,0 +1,84 @@
+-- creating tables
+CREATE TABLE legalaidontario.CHARGE
+	(Case_ID VARCHAR(9) NOT NULL,
+    Charge_ID VARCHAR(9) NOT NULL,
+    Charge_Name VARCHAR(25) NOT NULL,
+    Effective_Date DATETIME,
+    Effective_Status CHAR(1) NOT NULL);
+    
+CREATE TABLE legalaidontario.COURT
+	(Court_ID VARCHAR(9) NOT NULL, 
+    Location_ID VARCHAR(9) NOT NULL, 
+    Court_Name VARCHAR(25) NOT NULL, 
+    Court_level VARCHAR (25), 
+    Unit_Number VARCHAR(3),
+    Street_Number VARCHAR(3),
+    Street_Name VARCHAR(25),
+    City VARCHAR(25),
+    Province VARCHAR(25),
+    Country VARCHAR(25),
+    Postal_Code CHAR(6)); 
+    
+CREATE TABLE legalaidontario.LOCATION
+	(Location_ID VARCHAR (9) NOT NULL,
+    Location_Name VARCHAR(25) NOT NULL,
+    District VARCHAR(25),
+    Region VARCHAR(25),
+    Effective_Date DATETIME,
+    Effective_Status CHAR(1) NOT NULL); 
+    
+-- SQL QUERIES
+
+INSERT INTO CHARGE
+VALUES (1, 1 ,'Assault', 2022-04-01, 'A');
+
+UPDATE CHARGE 
+SET Effective_Status = 'I' 
+WHERE Case_ID = 1; 
+
+DELETE FROM CHARGE 
+WHERE Case_ID = 1; 
+
+-- VIEWS
+
+-- first, to see the cases at a specific court (1) 
+
+CREATE VIEW [Court 1 Docket] AS
+SELECT C.Case_ID, C.Client_ID, C.Staff_ID, C.Vendor_ID
+FROM CASE AS C, COURT AS CT 
+WHERE C.Court_ID = CT.Court_ID
+AND CT.Court_ID = 1; 
+
+-- to check updates on the nyumber of cases for a specific offence e.g. assault 
+
+CREATE VIEW [assault cases] AS 
+SELECT COUNT(*) AS number_of_assault_offences
+FROM CHARGE
+WHERE Charge_Name = 'Assault'; 
+
+
+-- to see all the courts in a specific location 1
+CREATE VIEW [Location 1 Courts] AS 
+SELECT C.Court_Name, C.Court_Level, C.Unit_Number, C.Street_Number, C.Street_Number, C.Street_Name
+FROM Court as C, Location as L
+WHERE C.Location_ID = L.Location_ID
+AND L.Location_ID = 1; 
+
+
+-- TRIGGER
+
+-- Will update the Charge case status whenever the Case table Case Status is altered 
+
+CREATE TRIGGER Charge_Status_Change AFTER UPDATE 
+ON CASE
+FOR EACH ROW 
+BEGIN
+	IF CASE.Case_Status <> CHARGE.Effective_Status:
+		UPDATE Charge 
+		SET Charge.Effective_Status = CASE.Case_Status 
+		WHERE CASE.Case_ID = Charge.Case_ID
+	END IF; 
+END;  
+
+
+
